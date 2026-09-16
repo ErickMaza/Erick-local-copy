@@ -1,0 +1,19 @@
+[33mcommit e0af679893b0f028ada9e48a3adb9a32acbfa982[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Erick Mazariegos <erick.mazariegos.608@my.csun.edu>
+Date:   Tue Sep 15 19:41:46 2026 -0700
+
+    ni
+
+ .gitignore                 |    2 [32m+[m
+ contact.html               |   94 [32m+++[m
+ images/Disk-Break.jpg      |  Bin [31m0[m -> [32m658704[m bytes
+ images/Neon.jpg            |  Bin [31m0[m -> [32m1513314[m bytes
+ images/Smokey-lift.jpg     |  Bin [31m0[m -> [32m2266890[m bytes
+ index.html                 |  758 [32m++++++++++++++++++++++++[m
+ overview.html              |  106 [32m++++[m
+ package-lock.json          | 1143 [32m++++++++++++++++++++++++++++++++++++[m
+ package.json               |   19 [32m+[m
+ public/styles-reworked.css |  205 [32m+++++++[m
+ public/styles.css          |  404 [32m+++++++++++++[m
+ server.js                  | 1376 [32m++++++++++++++++++++++++++++++++++++++++++++[m
+ 12 files changed, 4107 insertions(+)
