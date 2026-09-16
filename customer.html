@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex SaaS | Customer Portal</title>
+  <link rel="stylesheet" href="public/styles-reworked.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header customer-shell-header" id="shopHeader">
+      <div class="brand" onclick="window.location.href='overview.html'"><span>Apex Auto SaaS</span></div>
+      <div class="customer-nav">
+        <button id="tab-view-requests" class="portal-tab active" type="button" onclick="switchCustomerTab('view-requests')">View Service Requests &amp; Invoices</button>
+        <button id="tab-create-request" class="portal-tab" type="button" onclick="switchCustomerTab('create-request')">Create New Service Request</button>
+        <button id="tab-contact-us" class="portal-tab" type="button" onclick="switchCustomerTab('contact-us')">Contact Us &amp; Support</button>
+        <button id="tab-settings" class="portal-tab settings-tab" type="button" onclick="switchCustomerTab('settings')">Settings</button>
+        <button class="nav-btn" type="button" onclick="logout()">Log Out</button>
+      </div>
+    </header>
+
+    <main id="customerDashboard" class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <div>
+          <h2>Customer Portal</h2>
+          <small class="shop-title-text" id="clientShopBanner"></small>
+        </div>
+        <div>Welcome, <strong id="clientWelcomeName"></strong>!</div>
+      </div>
+
+      <section id="customerTab-view-requests">
+        <div id="statusBadge" style="margin: 12px 0;"></div>
+        <div id="invoiceContainer" class="invoice-box">
+          <h3>Active Repair Job &amp; Invoicing Details</h3>
+          <div id="invoiceContent">Loading records...</div>
+        </div>
+
+        <form onsubmit="handleUpdateCustomerProfile(event)" style="margin-top:24px;">
+          <h3>Update Profile &amp; Vehicle Details</h3>
+          <div class="grid">
+            <div><label for="cust_first_name">First Name</label><input type="text" id="cust_first_name" required></div>
+            <div><label for="cust_last_name">Last Name</label><input type="text" id="cust_last_name" required></div>
+            <div><label for="cust_phone">Phone Number</label><input type="text" id="cust_phone" required></div>
+          </div>
+          <div class="grid">
+            <div><label for="cust_email">Email Address</label><input type="email" id="cust_email" required></div>
+            <div><label for="cust_vin">VIN Number (17 Digits)</label><input type="text" id="cust_vin" maxlength="17" required></div>
+          </div>
+          <div class="grid">
+            <div><label for="cust_make">Vehicle Make</label><input type="text" id="cust_make" required></div>
+            <div><label for="cust_model">Vehicle Model</label><input type="text" id="cust_model" required></div>
+            <div><label for="cust_year">Year</label><input type="number" id="cust_year" required></div>
+          </div>
+          <label for="cust_issue">Reported Problem / Symptoms</label>
+          <textarea id="cust_issue" rows="3" required></textarea>
+          <button type="submit">Save Updated Profile</button>
+        </form>
+      </section>
+
+      <section id="customerTab-create-request" class="invoice-box hidden">
+        <h3>Submit New Vehicle Repair / Maintenance Request</h3>
+        <form onsubmit="handleBookAppointment(event)">
+          <div class="grid">
+            <div><label for="book_vin">VIN Number (17 Digits)</label><input type="text" id="book_vin" maxlength="17" required></div>
+            <div><label for="book_make">Vehicle Make</label><input type="text" id="book_make" required></div>
+            <div><label for="book_model">Vehicle Model</label><input type="text" id="book_model" required></div>
+            <div><label for="book_year">Year</label><input type="number" id="book_year" required></div>
+          </div>
+          <label for="book_datetime">Preferred Appointment Date &amp; Time</label>
+          <input type="datetime-local" id="book_datetime" required>
+          <label for="book_issue">Describe Vehicle Issue / Symptoms</label>
+          <textarea id="book_issue" rows="3" required></textarea>
+          <button type="submit">Submit Service Request</button>
+        </form>
+      </section>
+
+      <section id="customerTab-contact-us" class="invoice-box hidden">
+        <h3>Contact Shop Support</h3>
+        <div class="grid" style="margin-top:20px;">
+          <div class="feature-card"><h4>Service Location</h4><p>100 Industrial Parkway, Mechanics Hub</p></div>
+          <div class="feature-card"><h4>Phone Support</h4><p>(555) 019-2834</p></div>
+        </div>
+      </section>
+
+      <section id="customerTab-settings" class="invoice-box settings-page hidden">
+        <h3>Dashboard Settings</h3>
+        <p>Customize the dashboard header picture and accent color.</p>
+        <div class="shop-logo-control">
+          <label for="shopLogoInput">Change header picture</label>
+          <input id="shopLogoInput" type="file" accept="image/*">
+          <label for="themeColorInput">Change accent color</label>
+          <select id="themeColorInput" class="theme-color-picker">
+            <option value="#ef4444">Red</option>
+            <option value="#facc15">Yellow</option>
+            <option value="#22c55e">Green</option>
+            <option value="#ec4899">Pink</option>
+            <option value="#3b82f6">Blue</option>
+            <option value="#a855f7">Purple</option>
+          </select>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function authHeaders() {
+      return { 'Authorization': `Bearer ${localStorage.getItem('token')}` };
+    }
+
+    function switchCustomerTab(tabName) {
+      ['view-requests', 'create-request', 'contact-us', 'settings'].forEach(name => {
+        document.getElementById(`customerTab-${name}`).classList.toggle('hidden', name !== tabName);
+        document.getElementById(`tab-${name}`).classList.toggle('active', name === tabName);
+      });
+    }
+
+    async function loadCustomerProfile() {
+      let data;
+      try {
+        const res = await fetch('/api/customer/my-repair', { headers: authHeaders() });
+        if (!res.ok) throw new Error('Customer API unavailable');
+        data = await res.json();
+      } catch (error) {
+        if (localStorage.getItem('demo_mode') !== 'true') return logout();
+        data = {
+          customer: { first_name: 'Demo', last_name: 'Customer', phone: '(555) 019-2834', email: 'client@example.com' },
+          vehicle: { vin: '12345678901234567', make: 'Ford', model: 'Mustang', year: 2022 },
+          repairOrder: { issue_description: 'Routine inspection and brake service' },
+          appointment: {},
+          status: 'Requested',
+          invoice: null
+        };
+      }
+      const customer = data.customer || {};
+      const vehicle = data.vehicle || {};
+      const repairOrder = data.repairOrder || {};
+      const appointment = data.appointment || {};
+
+      document.getElementById('clientShopBanner').textContent = `Shop: ${localStorage.getItem('company_name') || ''}`;
+      document.getElementById('clientWelcomeName').textContent = customer.first_name ? `${customer.first_name} ${customer.last_name}` : localStorage.getItem('username');
+      document.getElementById('statusBadge').innerHTML = `Current Service Status: <span class="badge">${data.status || 'Requested'}</span>`;
+      document.getElementById('cust_first_name').value = customer.first_name || '';
+      document.getElementById('cust_last_name').value = customer.last_name || '';
+      document.getElementById('cust_phone').value = customer.phone || '';
+      document.getElementById('cust_email').value = customer.email || '';
+      document.getElementById('cust_vin').value = vehicle.vin || '';
+      document.getElementById('cust_make').value = vehicle.make || '';
+      document.getElementById('cust_model').value = vehicle.model || '';
+      document.getElementById('cust_year').value = vehicle.year || '';
+      document.getElementById('cust_issue').value = repairOrder.issue_description || '';
+
+      const appointmentText = appointment.scheduled_datetime ? new Date(appointment.scheduled_datetime).toLocaleString() : 'No appointment scheduled yet.';
+      const invoice = data.invoice;
+      document.getElementById('invoiceContent').innerHTML = invoice
+        ? `<p><strong>Scheduled Appointment:</strong> ${appointmentText}</p><p><strong>Invoice Number:</strong> ${invoice.invoice_number}</p><p><strong>Work Summary:</strong> ${(data.repairExec || {}).work_summary || 'Service in progress.'}</p><p><strong>Total Due:</strong> $${parseFloat(invoice.total_amount).toFixed(2)} <span class="badge">${invoice.payment_status || 'Unpaid'}</span></p>`
+        : `<p><strong>Scheduled Appointment:</strong> ${appointmentText}</p><p>No invoice generated yet.</p>`;
+    }
+
+    async function handleUpdateCustomerProfile(event) {
+      event.preventDefault();
+      const vin = document.getElementById('cust_vin').value;
+      if (vin.length !== 17) return alert('VIN must be exactly 17 digits');
+      const payload = {
+        first_name: document.getElementById('cust_first_name').value,
+        last_name: document.getElementById('cust_last_name').value,
+        phone: document.getElementById('cust_phone').value,
+        email: document.getElementById('cust_email').value,
+        vin,
+        make: document.getElementById('cust_make').value,
+        model: document.getElementById('cust_model').value,
+        year: document.getElementById('cust_year').value,
+        issue_description: document.getElementById('cust_issue').value
+      };
+      const res = await fetch('/api/customer/update-profile', { method: 'PUT', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      alert(res.ok ? data.message : `Error: ${data.error}`);
+    }
+
+    async function handleBookAppointment(event) {
+      event.preventDefault();
+      const vin = document.getElementById('book_vin').value;
+      if (vin.length !== 17) return alert('VIN must be exactly 17 digits');
+      const payload = {
+        vin,
+        make: document.getElementById('book_make').value,
+        model: document.getElementById('book_model').value,
+        year: document.getElementById('book_year').value,
+        scheduled_datetime: document.getElementById('book_datetime').value,
+        issue_description: document.getElementById('book_issue').value
+      };
+      const res = await fetch('/api/customer/request-appointment', { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!res.ok) return alert(`Error: ${data.error}`);
+      alert(data.message);
+      event.target.reset();
+      switchCustomerTab('view-requests');
+      loadCustomerProfile();
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'overview.html';
+    }
+
+    function setShopHeaderImage(imageSource) {
+      document.getElementById('shopHeader').style.backgroundImage = `linear-gradient(rgba(17, 24, 39, .72), rgba(17, 24, 39, .72)), url("${imageSource}")`;
+    }
+
+    function darkenColor(hexColor) {
+      const amount = 42;
+      const channels = hexColor.match(/[\da-f]{2}/gi).map(channel => Math.max(0, parseInt(channel, 16) - amount));
+      return `#${channels.map(channel => channel.toString(16).padStart(2, '0')).join('')}`;
+    }
+
+    function setThemeColor(color) {
+      document.documentElement.style.setProperty('--accent', color);
+      document.documentElement.style.setProperty('--accent-dark', darkenColor(color));
+      document.documentElement.style.setProperty('--orange', color);
+      document.documentElement.style.setProperty('--orange-dark', darkenColor(color));
+    }
+
+    setShopHeaderImage(localStorage.getItem('shop_logo') || 'images/Smokey-lift.jpg');
+    const availableThemeColors = ['#ef4444', '#facc15', '#22c55e', '#ec4899', '#3b82f6', '#a855f7'];
+    const savedThemeColor = availableThemeColors.includes(localStorage.getItem('theme_color')) ? localStorage.getItem('theme_color') : '#22c55e';
+    document.getElementById('themeColorInput').value = savedThemeColor;
+    setThemeColor(savedThemeColor);
+    document.getElementById('themeColorInput').addEventListener('change', event => {
+      setThemeColor(event.target.value);
+      localStorage.setItem('theme_color', event.target.value);
+    });
+    document.getElementById('shopLogoInput').addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        setShopHeaderImage(reader.result);
+        localStorage.setItem('shop_logo', reader.result);
+      });
+      reader.readAsDataURL(file);
+    });
+
+    if (localStorage.getItem('role') !== 'customer' || !localStorage.getItem('token')) {
+      window.location.href = 'index.html?screen=loginSection';
+    } else {
+      loadCustomerProfile();
+    }
+  </script>
+</body>
+</html>

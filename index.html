@@ -31,7 +31,8 @@
       <form onsubmit="handleRegister(event)">
         <label>Selected Auto Repair Shop Location</label>
         <select id="reg_company_id" required>
-          <option value="">Loading shop locations...</option>
+          <option value="1">Apex Precision Mechanics</option>
+          <option value="2">Vanguard Auto Performance</option>
         </select>
         <div class="grid">
           <div><label>First Name</label><input type="text" id="reg_first_name" required /></div>
@@ -55,6 +56,8 @@
         <label>Shop Location</label>
         <select id="login_company_id">
           <option value="">-- Auto-Detect Shop by PIN/Account --</option>
+          <option value="1">Apex Precision Mechanics</option>
+          <option value="2">Vanguard Auto Performance</option>
         </select>
 
         <label style="margin-top:12px;">Customer Email / Username OR Staff 6-Digit PIN</label>
@@ -284,21 +287,25 @@
     }
 
     async function loadCompaniesDropdown() {
-      const res = await fetch('/api/companies');
-      if (!res.ok) return;
-      const companies = await res.json();
+      try {
+        const res = await fetch('/api/companies');
+        if (!res.ok) return;
+        const companies = await res.json();
       
-      const regSelect = document.getElementById('reg_company_id');
-      const loginSelect = document.getElementById('login_company_id');
+        const regSelect = document.getElementById('reg_company_id');
+        const loginSelect = document.getElementById('login_company_id');
       
-      const optionsHtml = companies.map(c => `<option value="${c.id}">${c.company_name}</option>`).join('');
+        const optionsHtml = companies.map(c => `<option value="${c.id}">${c.company_name}</option>`).join('');
       
-      if (regSelect) regSelect.innerHTML = optionsHtml;
-      if (loginSelect) loginSelect.innerHTML = '<option value="">-- Auto-Detect Shop by PIN/Account --</option>' + optionsHtml;
+        if (regSelect) regSelect.innerHTML = optionsHtml;
+        if (loginSelect) loginSelect.innerHTML = '<option value="">-- Auto-Detect Shop by PIN/Account --</option>' + optionsHtml;
 
-      if (currentShop) {
-        if (regSelect) regSelect.value = currentShop.id;
-        if (loginSelect) loginSelect.value = currentShop.id;
+        if (currentShop) {
+          if (regSelect) regSelect.value = currentShop.id;
+          if (loginSelect) loginSelect.value = currentShop.id;
+        }
+      } catch (error) {
+        console.warn('Shop locations could not be loaded; using demo shop options.', error);
       }
     }
 
@@ -349,13 +356,28 @@
       const login_input = document.getElementById('login_input').value;
       const password = document.getElementById('password').value;
 
-      const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ company_id, login_input, password })
-      });
-      const data = await res.json();
-      if (!res.ok) return alert(data.error);
+      let data;
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ company_id, login_input, password })
+        });
+        data = await res.json();
+        if (!res.ok) return alert(data.error);
+      } catch (error) {
+        if (login_input !== 'client@example.com' || password !== 'pass123') {
+          return alert('The login service is unavailable. Use the demo customer credentials or start the Express server.');
+        }
+        data = {
+          token: 'static-demo-token',
+          role: 'customer',
+          username: 'client',
+          company_name: company_id === '2' ? 'Vanguard Auto Performance' : 'Apex Precision Mechanics',
+          primary_color: '#dce72a'
+        };
+        localStorage.setItem('demo_mode', 'true');
+      }
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('role', data.role);
@@ -689,9 +711,7 @@
       }
 
       if (role === 'customer') {
-        showScreen('customerDashboard');
-        switchCustomerTab('view-requests');
-        loadCustomerProfile();
+        window.location.href = 'customer.html';
       } else {
         showScreen('employeeDashboard');
         document.getElementById('empShopBanner').textContent = `Shop: ${localStorage.getItem('company_name') || ''}`;
