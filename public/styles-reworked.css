@@ -43,6 +43,9 @@ body::before { display: none; }
 .customer-nav { display: grid; gap: 7px; width: 100%; }
 .customer-nav .portal-tab { margin: 0; text-align: left; width: 100%; }
 .customer-nav .nav-btn { margin-top: 12px; }
+.employee-shell-header .brand { align-items: flex-start; font-size: .92rem; gap: 6px; line-height: 1.15; margin-left: 3px; margin-right: 3px; white-space: normal; }
+.employee-shell-header .brand::before { flex: 0 0 30px; height: 22px; width: 30px; }
+.employee-shell-header .brand span { min-width: 0; overflow-wrap: anywhere; }
 .settings-page .shop-logo-control { max-width: 420px; }
 .settings-page .shop-logo-control label { color: #5c6370; margin-top: 16px; text-align: left; }
 .settings-page .shop-logo-control label:first-child { margin-top: 0; }
@@ -155,6 +158,8 @@ label { color: #5c6370; display: block; font-size: .72rem; font-weight: 700; mar
 .workflow-tabs #btn-invoice::after { height: 49px; right: 7px; }
 .step-card:hover, .step-card.active { background: transparent; color: var(--ink); }
 .step-card:hover::before, .step-card.active::before { border-top-color: var(--accent-dark); }
+.step-card:disabled, .step-card.workflow-locked { color: #b7bbb5; cursor: not-allowed; opacity: .55; }
+.step-card:disabled:hover, .step-card.workflow-locked:hover { background: transparent; transform: none; }
 .workflow-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 5px; margin-top: 24px; padding: 24px; }
 .workflow-panel h3 { border-bottom: 1px solid var(--line); margin: 0 0 18px; padding-bottom: 12px; }
 .vehicle-vin-tools { align-items: center; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; margin-bottom: 8px; }

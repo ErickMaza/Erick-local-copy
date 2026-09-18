@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <header class="header customer-shell-header" id="shopHeader" style="background-image: linear-gradient(rgba(17, 24, 39, .72), rgba(17, 24, 39, .72)), url('images/Smokey-lift.jpg');">
+    <header class="header customer-shell-header employee-shell-header" id="shopHeader" style="background-image: linear-gradient(rgba(17, 24, 39, .72), rgba(17, 24, 39, .72)), url('images/Smokey-lift.jpg');">
       <div class="brand" onclick="window.location.href='overview.html'"><span id="brandName">Apex Auto SaaS</span></div>
       <div class="customer-nav">
         <button id="operationsTab" class="portal-tab active" type="button" onclick="showPanel('operations')">Shop Operations</button>
@@ -117,6 +117,7 @@
   <script>
     let activeDept = 'customer';
     let loadedCustomerList = [];
+    let completedDepts = new Set();
 
     const ROLE_MAP = {
       service_advisor: ['customer', 'vehicle', 'appointment', 'repair_order', 'estimate'],
@@ -283,11 +284,31 @@
 
     function applyRolePermissions(role) {
       const allowedDepts = ROLE_MAP[role] || [];
-      ['customer', 'vehicle', 'appointment', 'repair_order', 'parts_labor', 'estimate', 'repair', 'invoice'].forEach(dept => document.getElementById(`btn-${dept}`).classList.toggle('hidden', !allowedDepts.includes(dept)));
+      ['customer', 'vehicle', 'appointment', 'repair_order', 'parts_labor', 'estimate', 'repair', 'invoice'].forEach(dept => {
+        const button = document.getElementById(`btn-${dept}`);
+        button.classList.toggle('hidden', !allowedDepts.includes(dept));
+        button.disabled = !allowedDepts.includes(dept);
+      });
+      updateWorkflowLocks(role);
       if (allowedDepts.length) showDept(allowedDepts[0]);
     }
 
+    function updateWorkflowLocks(role = localStorage.getItem('role')) {
+      const allowedDepts = ROLE_MAP[role] || [];
+      let previousComplete = true;
+      allowedDepts.forEach(dept => {
+        const button = document.getElementById(`btn-${dept}`);
+        if (!button) return;
+        button.disabled = !previousComplete;
+        button.classList.toggle('workflow-locked', !previousComplete);
+        previousComplete = completedDepts.has(dept);
+      });
+    }
+
     function showDept(dept) {
+      const allowedDepts = ROLE_MAP[localStorage.getItem('role')] || [];
+      const deptIndex = allowedDepts.indexOf(dept);
+      if (deptIndex > 0 && !completedDepts.has(allowedDepts[deptIndex - 1])) return;
       activeDept = dept;
       document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
       document.getElementById(`btn-${dept}`).classList.add('active');
@@ -332,6 +353,8 @@
       const res = await fetch(`/api/department/${activeDept}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify(payload) });
       const data = await res.json();
       if (!res.ok) return alert('Access Denied: ' + data.error);
+      completedDepts.add(activeDept);
+      updateWorkflowLocks();
       alert('Record saved!'); e.target.reset(); fetchCustomerList(); showDept(activeDept);
     }
 
