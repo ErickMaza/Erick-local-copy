@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Apex SaaS | Multi-Tenant Auto Repair Operating System</title>
-  <link rel="stylesheet" href="public\styles-reworked.css">
+  <link rel="stylesheet" href="public/styles-reworked.css">
 </head>
 <body>
   <div class="container">
@@ -151,83 +151,6 @@
       </div>
     </div>
 
-    <!-- 4. EMPLOYEE & MANAGER DASHBOARD -->
-    <div id="employeeDashboard" class="card hidden">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <h2>Shop Operations Portal</h2>
-          <small class="shop-title-text" style="font-size:1.05rem;" id="empShopBanner"></small>
-        </div>
-        <div>User: <span id="userRoleBadge" class="badge"></span> <button onclick="logout()" class="nav-btn">Logout</button></div>
-      </div>
-
-      <div id="managerControlPanel" class="invoice-box hidden" style="margin-bottom:24px;">
-        <h3 class="shop-title-text">👑 Manager Dashboard: Staff PIN & Role Manager</h3>
-        <p style="color:var(--text-muted); font-size:0.9rem;">Create staff profiles, assign 6-digit login PINs, and update employee roles for this shop.</p>
-        
-        <form onsubmit="handleCreateEmployee(event)" style="margin-bottom:20px;">
-          <h4>Add New Employee Profile</h4>
-          <div class="grid">
-            <div><label>Employee Name / Username</label><input type="text" id="new_emp_username" placeholder="e.g. john_tech" required /></div>
-            <div><label>Employee Email (Optional)</label><input type="email" id="new_emp_email" placeholder="john@apex.com" /></div>
-            <div><label>Assign 6-Digit PIN</label><input type="text" id="new_emp_pin" maxlength="6" placeholder="e.g. 654321" required /></div>
-            <div>
-              <label>Assign Role</label>
-              <select id="new_emp_role" required>
-                <option value="service_advisor">Service Advisor</option>
-                <option value="technician">Technician</option>
-                <option value="billing">Billing Clerk</option>
-                <option value="manager">Manager</option>
-              </select>
-            </div>
-          </div>
-          <button type="submit" style="width:auto; padding:10px 20px;">Create Employee Profile</button>
-        </form>
-
-        <h4>Assigned Employee Roster & PIN Codes</h4>
-        <table class="staff-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Username</th>
-              <th>Email</th>
-              <th>6-Digit PIN Code</th>
-              <th>Role</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="employeeRosterBody">
-            <tr><td colspan="6">Loading employee records...</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <label class="shop-title-text" style="font-size:1rem;">Select Customer (Auto-fills Customer & Vehicle Data)</label>
-      <select id="customerSelector" onchange="autoFillCustomerData()">
-        <option value="">-- Choose Existing Customer Record --</option>
-      </select>
-
-      <label>Active Repair Job ID</label>
-      <input type="number" id="activeJobId" value="1" />
-
-      <div class="workflow-bar" style="margin-top:16px;">
-        <div id="btn-customer" class="step-card" onclick="showDept('customer')">1. Customer</div>
-        <div id="btn-vehicle" class="step-card" onclick="showDept('vehicle')">2. Vehicle</div>
-        <div id="btn-appointment" class="step-card" onclick="showDept('appointment')">3. Appointment</div>
-        <div id="btn-repair_order" class="step-card" onclick="showDept('repair_order')">4. Repair Order</div>
-        <div id="btn-parts_labor" class="step-card" onclick="showDept('parts_labor')">5. Parts + Labor</div>
-        <div id="btn-estimate" class="step-card" onclick="showDept('estimate')">6. Estimate</div>
-        <div id="btn-repair" class="step-card" onclick="showDept('repair')">7. Repair</div>
-        <div id="btn-invoice" class="step-card" onclick="showDept('invoice')">8. Invoice</div>
-      </div>
-
-      <form id="deptForm" onsubmit="submitDepartment(event)">
-        <h3 id="deptTitle">Department Action</h3>
-        <div id="formFields">Select a department above</div>
-        <button type="submit">Save Department Record</button>
-      </form>
-    </div>
-
   </div>
 
   <script>
@@ -311,11 +234,12 @@
 
     function showScreen(screenId) {
       closePortalMenu();
-      document.getElementById('registerSection').classList.add('hidden');
-      document.getElementById('loginSection').classList.add('hidden');
-      document.getElementById('customerDashboard').classList.add('hidden');
-      document.getElementById('employeeDashboard').classList.add('hidden');
-      document.getElementById(screenId).classList.remove('hidden');
+      ['registerSection', 'loginSection', 'customerDashboard', 'employeeDashboard'].forEach(id => {
+        const screen = document.getElementById(id);
+        if (screen) screen.classList.add('hidden');
+      });
+      const requestedScreen = document.getElementById(screenId);
+      if (requestedScreen) requestedScreen.classList.remove('hidden');
     }
 
     function togglePortalMenu(event) {
@@ -355,6 +279,13 @@
       const company_id = document.getElementById('login_company_id').value;
       const login_input = document.getElementById('login_input').value;
       const password = document.getElementById('password').value;
+      const demoStaff = {
+        '111111': { username: 'manager', role: 'manager', company_name: 'Apex Precision Mechanics', primary_color: '#f97316' },
+        '222222': { username: 'advisor', role: 'service_advisor', company_name: 'Apex Precision Mechanics', primary_color: '#f97316' },
+        '333333': { username: 'tech', role: 'technician', company_name: 'Apex Precision Mechanics', primary_color: '#f97316' },
+        '444444': { username: 'billing', role: 'billing', company_name: 'Apex Precision Mechanics', primary_color: '#f97316' },
+        '999999': { username: 'vanguard_mgr', role: 'manager', company_name: 'Vanguard Auto Performance', primary_color: '#3b82f6' }
+      };
 
       let data;
       try {
@@ -364,18 +295,18 @@
           body: JSON.stringify({ company_id, login_input, password })
         });
         data = await res.json();
-        if (!res.ok) return alert(data.error);
+        if (!res.ok) {
+          if (!demoStaff[login_input]) return alert(data.error);
+          data = { token: 'static-demo-token', ...demoStaff[login_input] };
+          localStorage.setItem('demo_mode', 'true');
+        }
       } catch (error) {
-        if (login_input !== 'client@example.com' || password !== 'pass123') {
+        if (login_input !== 'client@example.com' && !demoStaff[login_input]) {
           return alert('The login service is unavailable. Use the demo customer credentials or start the Express server.');
         }
-        data = {
-          token: 'static-demo-token',
-          role: 'customer',
-          username: 'client',
-          company_name: company_id === '2' ? 'Vanguard Auto Performance' : 'Apex Precision Mechanics',
-          primary_color: '#dce72a'
-        };
+        data = demoStaff[login_input]
+          ? { token: 'static-demo-token', ...demoStaff[login_input] }
+          : { token: 'static-demo-token', role: 'customer', username: 'client', company_name: company_id === '2' ? 'Vanguard Auto Performance' : 'Apex Precision Mechanics', primary_color: '#dce72a' };
         localStorage.setItem('demo_mode', 'true');
       }
 
@@ -713,19 +644,7 @@
       if (role === 'customer') {
         window.location.href = 'customer.html';
       } else {
-        showScreen('employeeDashboard');
-        document.getElementById('empShopBanner').textContent = `Shop: ${localStorage.getItem('company_name') || ''}`;
-        document.getElementById('userRoleBadge').textContent = `${localStorage.getItem('username')} (${role})`;
-        
-        if (role === 'manager') {
-          document.getElementById('managerControlPanel').classList.remove('hidden');
-          loadManagerStaffTable();
-        } else {
-          document.getElementById('managerControlPanel').classList.add('hidden');
-        }
-
-        fetchCustomerList();
-        applyRolePermissions(role);
+        window.location.href = 'employee.html';
       }
     }
 

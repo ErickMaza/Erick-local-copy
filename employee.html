@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex SaaS | Shop Operations Portal</title>
+  <link rel="stylesheet" href="public/styles-reworked.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header customer-shell-header" id="shopHeader" style="background-image: linear-gradient(rgba(17, 24, 39, .72), rgba(17, 24, 39, .72)), url('images/Smokey-lift.jpg');">
+      <div class="brand" onclick="window.location.href='overview.html'"><span id="brandName">Apex Auto SaaS</span></div>
+      <div class="customer-nav">
+        <button id="operationsTab" class="portal-tab active" type="button" onclick="showPanel('operations')">Shop Operations</button>
+        <button id="workflowTab" class="portal-tab" type="button" onclick="showPanel('workflow')">Repair Workflow</button>
+        <button id="workersTab" class="portal-tab" type="button" onclick="showPanel('workers')">All Workers</button>
+        <button id="settingsTab" class="portal-tab settings-tab" type="button" onclick="showPanel('settings')">Settings</button>
+        <button class="nav-btn" type="button" onclick="logout()">Log Out</button>
+      </div>
+    </header>
+
+    <main id="employeeDashboard" class="card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h2>Shop Operations Portal</h2>
+          <small class="shop-title-text" style="font-size:1.05rem;" id="empShopBanner"></small>
+        </div>
+        <div>User: <span id="userRoleBadge" class="badge"></span></div>
+      </div>
+
+      <section id="operationsView">
+      <div id="managerControlPanel" class="invoice-box hidden" style="margin-bottom:24px;">
+        <h3 class="shop-title-text">Manager Dashboard: Staff PIN & Role Manager</h3>
+        <p style="color:var(--text-muted); font-size:0.9rem;">Create staff profiles, assign 6-digit login PINs, and update employee roles for this shop.</p>
+        <form onsubmit="handleCreateEmployee(event)" style="margin-bottom:20px;">
+          <h4>Add New Employee Profile</h4>
+          <div class="grid">
+            <div><label>Employee Name / Username</label><input type="text" id="new_emp_username" placeholder="e.g. john_tech" required /></div>
+            <div><label>Employee Email (Optional)</label><input type="email" id="new_emp_email" placeholder="john@apex.com" /></div>
+            <div><label>Assign 6-Digit PIN</label><input type="text" id="new_emp_pin" maxlength="6" placeholder="e.g. 654321" required /></div>
+            <div><label>Assign Role</label><select id="new_emp_role" required>
+              <option value="service_advisor">Service Advisor</option>
+              <option value="technician">Technician</option>
+              <option value="billing">Billing Clerk</option>
+              <option value="manager">Manager</option>
+            </select></div>
+          </div>
+          <button type="submit" style="width:auto; padding:10px 20px;">Create Employee Profile</button>
+        </form>
+
+        <h4>Assigned Employee Roster & PIN Codes</h4>
+        <table class="staff-table">
+          <thead><tr><th>ID</th><th>Username</th><th>Email</th><th>6-Digit PIN Code</th><th>Role</th><th>Action</th></tr></thead>
+          <tbody id="employeeRosterBody"><tr><td colspan="6">Loading employee records...</td></tr></tbody>
+        </table>
+      </div>
+
+      <div class="invoice-box">
+        <h3>Repair Shop Operations</h3>
+        <p>Select <strong>Repair Workflow</strong> to manage customer jobs across the eight service departments.</p>
+        <button type="button" onclick="showPanel('workflow')">Open Repair Workflow</button>
+      </div>
+      </section>
+
+      <section id="workflowView" class="hidden">
+      <h3>Repair Workflow</h3>
+      <p>Select a department tab to update the active repair job.</p>
+      <label class="shop-title-text" style="font-size:1rem;">Select Customer (Auto-fills Customer & Vehicle Data)</label>
+      <select id="customerSelector" onchange="autoFillCustomerData()"><option value="">-- Choose Existing Customer Record --</option></select>
+      <label>Active Repair Job ID</label>
+      <input type="number" id="activeJobId" value="1" />
+
+      <div class="workflow-bar workflow-tabs" style="margin-top:16px;">
+        <button id="btn-customer" class="step-card" type="button" onclick="showDept('customer')">Customer</button>
+        <button id="btn-vehicle" class="step-card" type="button" onclick="showDept('vehicle')">Vehicle</button>
+        <button id="btn-appointment" class="step-card" type="button" onclick="showDept('appointment')">Appointments</button>
+        <button id="btn-repair_order" class="step-card" type="button" onclick="showDept('repair_order')">Repair Order</button>
+        <button id="btn-parts_labor" class="step-card" type="button" onclick="showDept('parts_labor')">Parts + Labor</button>
+        <button id="btn-estimate" class="step-card" type="button" onclick="showDept('estimate')">Estimate</button>
+        <button id="btn-repair" class="step-card" type="button" onclick="showDept('repair')">Repair</button>
+        <button id="btn-invoice" class="step-card" type="button" onclick="showDept('invoice')">Invoice</button>
+      </div>
+
+      <form id="deptForm" class="workflow-panel" onsubmit="submitDepartment(event)">
+        <h3 id="deptTitle">Department Action</h3>
+        <div id="formFields">Select a department above</div>
+        <button id="deptSaveButton" type="submit">Save Department Record</button>
+      </form>
+      </section>
+
+      <section id="workersView" class="hidden">
+        <h3>All Workers</h3>
+        <p>Everyone assigned to this shop is shown below.</p>
+        <div id="workerCards" class="worker-cards"><div class="invoice-box">Loading worker profiles...</div></div>
+      </section>
+
+      <section id="settingsView" class="invoice-box settings-page hidden">
+        <h3>Dashboard Settings</h3>
+        <p>Customize the dashboard header picture and accent color.</p>
+        <div class="shop-logo-control">
+          <label for="employeeLogoInput">Change header picture</label>
+          <input id="employeeLogoInput" type="file" accept="image/*">
+          <label for="employeeThemeColorInput">Change accent color</label>
+          <select id="employeeThemeColorInput" class="theme-color-picker">
+            <option value="#ef4444">Red</option>
+            <option value="#facc15">Yellow</option>
+            <option value="#22c55e">Green</option>
+            <option value="#ec4899">Pink</option>
+            <option value="#3b82f6">Blue</option>
+            <option value="#a855f7">Purple</option>
+          </select>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let activeDept = 'customer';
+    let loadedCustomerList = [];
+
+    const ROLE_MAP = {
+      service_advisor: ['customer', 'vehicle', 'appointment', 'repair_order', 'estimate'],
+      technician: ['parts_labor', 'repair'],
+      billing: ['estimate', 'invoice'],
+      manager: ['customer', 'vehicle', 'appointment', 'repair_order', 'parts_labor', 'estimate', 'repair', 'invoice']
+    };
+
+    const DEPT_FIELDS = {
+      customer: '<input name="first_name" id="field_first_name" placeholder="First Name" required/><input name="last_name" id="field_last_name" placeholder="Last Name" required/><input name="phone" id="field_phone" placeholder="Phone Number" required/>',
+      vehicle: '<div class="vehicle-vin-tools"><input name="vin" id="field_vin" maxlength="17" placeholder="Any 17-Digit VIN Number" required/><button type="button" onclick="lookupVinOnline()">Search / Decode Any VIN Online</button></div><input name="make" id="field_make" placeholder="Make" required/><input name="model" id="field_model" placeholder="Model" required/><input name="year" id="field_year" type="number" placeholder="Year" required/>',
+      appointment: '<label for="appointment_datetime">Preferred Appointment Date & Time</label><input name="scheduled_datetime" id="appointment_datetime" type="datetime-local" onchange="showAvailableAdvisors()" required/><div id="advisorOptions" class="advisor-options hidden"><h4>Available Service Advisors</h4><p class="advisor-help">These advisors are not scheduled during this time and are open to work.</p><div id="advisorCards" class="advisor-cards"></div><input name="service_advisor" id="selectedAdvisor" type="hidden" required/></div>',
+      repair_order: '<input name="ro_number" placeholder="RO Number" required/><textarea name="issue_description" placeholder="Issue Description" required></textarea>',
+      parts_labor: '<select name="item_type"><option value="Part">Part</option><option value="Labor">Labor</option></select><input name="description" id="part_desc" placeholder="Part Description" required/><button type="button" onclick="checkLivePartsPrice()" style="margin-bottom:8px;">Lookup Price For This Vehicle</button><input name="unit_cost" id="part_cost" type="number" step="0.01" placeholder="Cost ($)" required/>',
+      estimate: '<input name="estimated_total" type="number" step="0.01" placeholder="Estimated Total ($)" required/>',
+      repair: '<textarea name="work_summary" placeholder="Summary of performed repairs" required></textarea>',
+      invoice: '<input name="invoice_number" placeholder="Invoice #" required/><input name="subtotal" type="number" step="0.01" placeholder="Subtotal ($)" required/><input name="total_amount" type="number" step="0.01" placeholder="Total ($)" required/>'
+    };
+
+    function applyShopThemeColor(colorHex) {
+      if (!colorHex) return;
+      document.documentElement.style.setProperty('--primary', colorHex);
+      document.documentElement.style.setProperty('--primary-hover', colorHex === '#3b82f6' ? '#2563eb' : colorHex === '#f97316' ? '#ea580c' : colorHex);
+    }
+
+    async function loadManagerStaffTable() {
+      const res = await fetch('/api/manager/employees', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      if (!res.ok) return;
+      const employees = await res.json();
+      document.getElementById('employeeRosterBody').innerHTML = employees.map(emp => `<tr><td>${emp.id}</td><td><strong>${emp.username}</strong></td><td>${emp.email || 'N/A'}</td><td><input type="text" id="pin_${emp.id}" value="${emp.pin_code || ''}" maxlength="6" style="width:100px; padding:6px;" /></td><td><select id="role_${emp.id}" style="padding:6px;"><option value="manager" ${emp.role === 'manager' ? 'selected' : ''}>Manager</option><option value="service_advisor" ${emp.role === 'service_advisor' ? 'selected' : ''}>Service Advisor</option><option value="technician" ${emp.role === 'technician' ? 'selected' : ''}>Technician</option><option value="billing" ${emp.role === 'billing' ? 'selected' : ''}>Billing Clerk</option></select></td><td><button onclick="saveEmployeeChanges(${emp.id})" style="margin:0; padding:6px 12px; font-size:0.8rem;">Save PIN & Role</button></td></tr>`).join('');
+    }
+
+    async function handleCreateEmployee(e) {
+      e.preventDefault();
+      const payload = { username: new_emp_username.value, email: new_emp_email.value, pin_code: new_emp_pin.value, role: new_emp_role.value };
+      const res = await fetch('/api/manager/create-employee', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!res.ok) return alert('Error: ' + data.error);
+      alert(data.message); e.target.reset(); loadManagerStaffTable();
+    }
+
+    async function saveEmployeeChanges(empId) {
+      const res = await fetch('/api/manager/update-employee', { method: 'PUT', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify({ id: empId, pin_code: document.getElementById(`pin_${empId}`).value, role: document.getElementById(`role_${empId}`).value }) });
+      const data = await res.json();
+      if (!res.ok) return alert('Error: ' + data.error);
+      alert(data.message); loadManagerStaffTable();
+    }
+
+    async function lookupVinOnline() {
+      const vin = document.getElementById('field_vin').value;
+      if (!vin || vin.length !== 17) return alert('Enter any valid 17-digit VIN number');
+      const res = await fetch(`/api/vehicle/vin-lookup/${vin}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const data = await res.json();
+      if (!res.ok) return alert('VIN Lookup Error: ' + data.error);
+      field_make.value = data.make; field_model.value = data.model; field_year.value = data.year;
+      alert(`Decoded VIN (${data.vin}): ${data.year} ${data.make} ${data.model}`);
+    }
+
+    async function checkLivePartsPrice() {
+      const desc = document.getElementById('part_desc').value;
+      if (!desc) return alert('Enter a part description first');
+      const res = await fetch(`/api/parts/catalog-lookup?jobId=${activeJobId.value}&partName=${encodeURIComponent(desc)}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      const data = await res.json();
+      if (res.ok) { part_cost.value = data.market_price; alert(`Online Price for ${data.vehicle}: $${data.market_price}`); }
+    }
+
+    async function fetchCustomerList() {
+      const res = await fetch('/api/customers/list', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+      if (!res.ok) return;
+      loadedCustomerList = await res.json();
+      customerSelector.innerHTML = '<option value="">-- Choose Existing Customer Record --</option>' + loadedCustomerList.map(c => `<option value="${c.repair_job_id}">Job #${c.repair_job_id} - ${c.first_name} ${c.last_name} (${c.year || ''} ${c.make || ''} ${c.model || ''})</option>`).join('');
+    }
+
+    function autoFillCustomerData() {
+      const jobId = customerSelector.value;
+      if (!jobId) return;
+      activeJobId.value = jobId;
+      const customer = loadedCustomerList.find(c => c.repair_job_id == jobId);
+      if (!customer) return;
+      const fields = activeDept === 'customer' ? ['first_name', 'last_name', 'phone'] : activeDept === 'vehicle' ? ['vin', 'make', 'model', 'year'] : [];
+      fields.forEach(field => { const element = document.getElementById(`field_${field}`); if (element) element.value = customer[field] || ''; });
+    }
+
+    function showPanel(panelName) {
+      const isWorkflow = panelName === 'workflow';
+      const isWorkers = panelName === 'workers';
+      const isSettings = panelName === 'settings';
+      document.getElementById('operationsView').classList.toggle('hidden', isWorkflow || isWorkers || isSettings);
+      document.getElementById('workflowView').classList.toggle('hidden', !isWorkflow);
+      document.getElementById('workersView').classList.toggle('hidden', !isWorkers);
+      document.getElementById('settingsView').classList.toggle('hidden', !isSettings);
+      document.getElementById('operationsTab').classList.toggle('active', !isWorkflow && !isWorkers && !isSettings);
+      document.getElementById('workflowTab').classList.toggle('active', isWorkflow);
+      document.getElementById('workersTab').classList.toggle('active', isWorkers);
+      document.getElementById('settingsTab').classList.toggle('active', isSettings);
+      if (isWorkers) loadWorkers();
+      if (isSettings) initializeSettings();
+    }
+
+    function setShopHeaderImage(imageSource) {
+      document.getElementById('shopHeader').style.backgroundImage = `linear-gradient(rgba(17, 24, 39, .72), rgba(17, 24, 39, .72)), url("${imageSource}")`;
+    }
+
+    function darkenColor(hexColor) {
+      const amount = 42;
+      const channels = hexColor.match(/[\da-f]{2}/gi).map(channel => Math.max(0, parseInt(channel, 16) - amount));
+      return `#${channels.map(channel => channel.toString(16).padStart(2, '0')).join('')}`;
+    }
+
+    function setThemeColor(color) {
+      document.documentElement.style.setProperty('--accent', color);
+      document.documentElement.style.setProperty('--accent-dark', darkenColor(color));
+      document.documentElement.style.setProperty('--orange', color);
+      document.documentElement.style.setProperty('--orange-dark', darkenColor(color));
+    }
+
+    function initializeSettings() {
+      const colorInput = document.getElementById('employeeThemeColorInput');
+      const logoInput = document.getElementById('employeeLogoInput');
+      if (colorInput.dataset.ready) return;
+      const availableThemeColors = ['#ef4444', '#facc15', '#22c55e', '#ec4899', '#3b82f6', '#a855f7'];
+      const savedThemeColor = availableThemeColors.includes(localStorage.getItem('theme_color')) ? localStorage.getItem('theme_color') : '#22c55e';
+      colorInput.value = savedThemeColor;
+      setThemeColor(savedThemeColor);
+      colorInput.addEventListener('change', event => {
+        setThemeColor(event.target.value);
+        localStorage.setItem('theme_color', event.target.value);
+      });
+      logoInput.addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          setShopHeaderImage(reader.result);
+          localStorage.setItem('shop_logo', reader.result);
+        });
+        reader.readAsDataURL(file);
+      });
+      colorInput.dataset.ready = 'true';
+    }
+
+    async function loadWorkers() {
+      const workerCards = document.getElementById('workerCards');
+      let workers;
+      try {
+        const res = await fetch('/api/workers', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
+        if (!res.ok) throw new Error('Worker API unavailable');
+        workers = await res.json();
+      } catch (error) {
+        workers = [
+          { username: 'manager', role: 'manager', email: 'manager@apex.com' },
+          { username: 'advisor', role: 'service_advisor', email: 'advisor@apex.com' },
+          { username: 'tech', role: 'technician', email: 'tech@apex.com' },
+          { username: 'billing', role: 'billing', email: 'billing@apex.com' }
+        ];
+      }
+      workerCards.innerHTML = workers.map(worker => {
+        const name = worker.username || 'Worker';
+        const initials = name.slice(0, 2).toUpperCase();
+        const role = (worker.role || 'staff').replace('_', ' ');
+        return `<article class="worker-card"><span class="worker-avatar">${initials}</span><div><h4>${name}</h4><p>${role}</p><small>${worker.email || 'Shop team member'}</small></div><span class="worker-status">Active</span></article>`;
+      }).join('');
+    }
+
+    function applyRolePermissions(role) {
+      const allowedDepts = ROLE_MAP[role] || [];
+      ['customer', 'vehicle', 'appointment', 'repair_order', 'parts_labor', 'estimate', 'repair', 'invoice'].forEach(dept => document.getElementById(`btn-${dept}`).classList.toggle('hidden', !allowedDepts.includes(dept)));
+      if (allowedDepts.length) showDept(allowedDepts[0]);
+    }
+
+    function showDept(dept) {
+      activeDept = dept;
+      document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+      document.getElementById(`btn-${dept}`).classList.add('active');
+      document.getElementById('deptTitle').textContent = `Department: ${dept.replace('_', ' ').toUpperCase()}`;
+      document.getElementById('formFields').innerHTML = DEPT_FIELDS[dept] || '';
+      document.getElementById('deptSaveButton').disabled = dept === 'appointment';
+      autoFillCustomerData();
+    }
+
+    function showAvailableAdvisors() {
+      const appointmentDate = document.getElementById('appointment_datetime').value;
+      const advisorOptions = document.getElementById('advisorOptions');
+      const advisorCards = document.getElementById('advisorCards');
+      const selectedAdvisor = document.getElementById('selectedAdvisor');
+      if (!appointmentDate) {
+        advisorOptions.classList.add('hidden');
+        selectedAdvisor.value = '';
+        document.getElementById('deptSaveButton').disabled = true;
+        return;
+      }
+
+      const availableAdvisors = [
+        { name: 'Alex Morgan', specialty: 'Service Advisor', initials: 'AM' },
+        { name: 'Jordan Lee', specialty: 'Service Advisor', initials: 'JL' },
+        { name: 'Taylor Brooks', specialty: 'Service Advisor', initials: 'TB' }
+      ];
+
+      advisorCards.innerHTML = availableAdvisors.map(advisor => `<button type="button" class="advisor-card" onclick="selectAdvisor('${advisor.name}')"><span class="advisor-avatar">${advisor.initials}</span><span class="advisor-card-copy"><strong>${advisor.name}</strong><small>${advisor.specialty}</small><em>Open to work</em></span></button>`).join('');
+      advisorOptions.classList.remove('hidden');
+    }
+
+    function selectAdvisor(advisorName) {
+      document.getElementById('selectedAdvisor').value = advisorName;
+      document.querySelectorAll('.advisor-card').forEach(card => card.classList.toggle('selected', card.textContent.includes(advisorName)));
+      document.getElementById('deptSaveButton').disabled = false;
+    }
+
+    async function submitDepartment(e) {
+      e.preventDefault();
+      const payload = { repair_job_id: activeJobId.value };
+      new FormData(e.target).forEach((value, key) => payload[key] = value);
+      const res = await fetch(`/api/department/${activeDept}`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!res.ok) return alert('Access Denied: ' + data.error);
+      alert('Record saved!'); e.target.reset(); fetchCustomerList(); showDept(activeDept);
+    }
+
+    function logout() { localStorage.clear(); window.location.href = 'index.html?screen=loginSection'; }
+
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || role === 'customer') {
+      window.location.href = 'index.html?screen=loginSection';
+    } else {
+      applyShopThemeColor(localStorage.getItem('primary_color'));
+      setShopHeaderImage(localStorage.getItem('shop_logo') || 'images/Smokey-lift.jpg');
+      const savedThemeColor = localStorage.getItem('theme_color');
+      if (savedThemeColor) setThemeColor(savedThemeColor);
+      document.getElementById('brandName').textContent = localStorage.getItem('company_name') || 'Apex Auto SaaS';
+      document.getElementById('empShopBanner').textContent = `Shop: ${localStorage.getItem('company_name') || ''}`;
+      document.getElementById('userRoleBadge').textContent = `${localStorage.getItem('username')} (${role})`;
+      if (role === 'manager') { document.getElementById('managerControlPanel').classList.remove('hidden'); loadManagerStaffTable(); }
+      fetchCustomerList();
+      applyRolePermissions(role);
+    }
+  </script>
+</body>
+</html>

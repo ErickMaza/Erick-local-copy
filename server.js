@@ -9,6 +9,7 @@ app.use(express.json());
 
 // Serve static assets from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_school_project_key_2026';
 
@@ -327,6 +328,19 @@ app.get('/api/manager/employees', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/api/workers', authenticateToken, async (req, res) => {
+  if (req.user.role === 'customer') return res.status(403).json({ error: 'Employees only.' });
+  try {
+    const [rows] = await pool.query(
+      'SELECT id, username, email, role, created_at FROM users WHERE company_id = ? AND role != "customer" ORDER BY username ASC',
+      [req.user.company_id]
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/manager/create-employee', authenticateToken, async (req, res) => {
   if (req.user.role !== 'manager') return res.status(403).json({ error: 'Only Managers can create employee profiles.' });
   
@@ -547,6 +561,18 @@ app.get('/overview.html', (req, res) => {
 
 app.get('/contact.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'contact.html'));
+});
+
+app.get('/index.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/customer.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'customer.html'));
+});
+
+app.get('/employee.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'employee.html'));
 });
 
 app.get(['/', '/:slug'], (req, res) => {
@@ -1302,19 +1328,7 @@ app.get(['/', '/:slug'], (req, res) => {
         switchCustomerTab('view-requests');
         loadCustomerProfile();
       } else {
-        showScreen('employeeDashboard');
-        document.getElementById('empShopBanner').textContent = \`Shop: \${localStorage.getItem('company_name') || ''}\`;
-        document.getElementById('userRoleBadge').textContent = \`\${localStorage.getItem('username')} (\${role})\`;
-        
-        if (role === 'manager') {
-          document.getElementById('managerControlPanel').classList.remove('hidden');
-          loadManagerStaffTable();
-        } else {
-          document.getElementById('managerControlPanel').classList.add('hidden');
-        }
-
-        fetchCustomerList();
-        applyRolePermissions(role);
+        window.location.href = '/employee.html';
       }
     }
 

@@ -19,10 +19,10 @@
 
 * { box-sizing: border-box; }
 html { background: var(--page); scroll-behavior: smooth; }
-body { background: var(--page); color: var(--ink); font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; margin: 0; min-height: 100vh; padding: min(3vw, .25in) min(3vw, 1in); }
+body { background: var(--page); color: var(--ink); font-family: "DM Sans", ui-sans-serif, system-ui, sans-serif; margin: 0; min-height: 100vh; padding: min(1.5vw, .125in) min(1.5vw, .5in); }
 body::before { display: none; }
 
-.container { background: var(--workspace); border: 1px solid #3b3b3b; border-radius: 22px; box-shadow: 0 24px 80px rgba(0,0,0,.18); display: grid; grid-template-columns: 174px minmax(0, 1fr); margin: 0 auto; min-height: calc(100vh - (2 * min(3vw, .25in))); overflow: hidden; padding: 0; width: 100%; }
+.container { background: var(--workspace); border: 1px solid #3b3b3b; border-radius: 22px; box-shadow: 0 24px 80px rgba(0,0,0,.18); display: grid; grid-template-columns: 174px minmax(0, 1fr); margin: 0 auto; max-width: 1440px; min-height: calc(100vh - (2 * min(1.5vw, .125in))); overflow: hidden; padding: 0; width: 100%; }
 .container > *:not(.header) { grid-column: 2; min-width: 0; }
 
 .header { align-items: stretch; background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; grid-column: 1; grid-row: 1 / -1; justify-content: flex-start; min-height: 100%; padding: 24px 14px; }
@@ -145,19 +145,51 @@ label { color: #5c6370; display: block; font-size: .72rem; font-weight: 700; mar
 .staff-table th { color: var(--muted); font-size: .65rem; text-transform: uppercase; }
 .badge { background: var(--accent); border-radius: 4px; color: var(--ink); font-size: .7rem; font-weight: 700; padding: 4px 7px; }
 .shop-title-text { color: var(--accent-dark); font-weight: 700; }
-.workflow-bar { align-items: stretch; display: flex; gap: 7px; margin: 18px 0; overflow-x: auto; padding: 2px 2px 8px; }
-.step-card { background: var(--surface); border: 1px solid var(--line); border-radius: 5px; color: var(--muted); cursor: pointer; flex: 1 0 108px; font-size: .72rem; font-weight: 700; min-height: 42px; padding: 11px 8px; text-align: center; }
-.step-card:hover, .step-card.active { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+.workflow-bar { align-items: stretch; display: flex; gap: 0; margin: 18px 0; overflow-x: visible; padding: 2px 2px 8px; }
+.workflow-tabs { border-bottom: 1px solid var(--line); margin-left: -.125in; margin-right: .125in; overflow: clip; padding-bottom: 12px; }
+.step-card { align-items: center; background: transparent; border: 0; border-radius: 0; color: var(--ink); cursor: pointer; display: flex; flex: 1 1 0; font-size: .9rem; font-weight: 500; height: 50px; justify-content: center; line-height: 1.15; margin: 0 10px 0 0; min-height: 50px; min-width: 0; padding: 12px 6px 8px; position: relative; text-align: center; text-indent: 3ch; white-space: nowrap; width: auto; }
+.workflow-tabs #btn-customer { flex-grow: .72; }
+.step-card::before { border-top: 3px solid var(--accent-dark); content: ""; left: 0; position: absolute; right: 0; top: 0; }
+.step-card::after { border-right: 3px solid var(--accent-dark); content: ""; height: 69px; position: absolute; right: -1px; top: 0; transform: rotate(-35deg); transform-origin: top; }
+.workflow-tabs #btn-invoice { margin-right: 0; padding-right: 12px; }
+.workflow-tabs #btn-invoice::after { height: 49px; right: 7px; }
+.step-card:hover, .step-card.active { background: transparent; color: var(--ink); }
+.step-card:hover::before, .step-card.active::before { border-top-color: var(--accent-dark); }
+.workflow-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 5px; margin-top: 24px; padding: 24px; }
+.workflow-panel h3 { border-bottom: 1px solid var(--line); margin: 0 0 18px; padding-bottom: 12px; }
+.vehicle-vin-tools { align-items: center; display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr) auto; margin-bottom: 8px; }
+.vehicle-vin-tools button { margin: 0; white-space: nowrap; width: auto; }
+.advisor-options { background: var(--workspace); border: 1px solid var(--line); border-radius: 5px; margin-top: 18px; padding: 18px; }
+.advisor-options h4 { margin: 0 0 4px; }
+.advisor-help { font-size: .78rem; margin: 0 0 14px; }
+.advisor-cards { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.advisor-card { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 5px; display: flex; gap: 10px; margin: 0; padding: 12px; text-align: left; transition: border-color .2s, background .2s; width: 100%; }
+.advisor-card:hover, .advisor-card.selected { background: #f4f5e6; border-color: var(--accent-dark); transform: none; }
+.advisor-avatar { align-items: center; background: var(--accent); border-radius: 50%; color: var(--ink); display: flex; flex: 0 0 36px; font-size: .72rem; font-weight: 700; height: 36px; justify-content: center; }
+.advisor-card-copy { display: grid; gap: 2px; }
+.advisor-card-copy strong { font-size: .78rem; }
+.advisor-card-copy small { color: var(--muted); font-size: .68rem; }
+.advisor-card-copy em { color: var(--accent-dark); font-size: .65rem; font-style: normal; font-weight: 700; }
+.workflow-panel button:disabled { background: #d7d9d5; color: #8a8d87; cursor: not-allowed; opacity: .75; transform: none; }
+.worker-cards { display: grid; gap: 14px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 20px; }
+.worker-card { align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 5px; display: flex; gap: 12px; min-height: 104px; padding: 16px; position: relative; }
+.worker-avatar { align-items: center; background: var(--accent); border-radius: 50%; color: var(--ink); display: flex; flex: 0 0 42px; font-size: .8rem; font-weight: 700; height: 42px; justify-content: center; }
+.worker-card h4 { font-size: .9rem; margin: 0 0 3px; text-transform: capitalize; }
+.worker-card p, .worker-card small { color: var(--muted); display: block; font-size: .7rem; margin: 0; text-transform: capitalize; }
+.worker-status { color: var(--accent-dark); font-size: .65rem; font-weight: 700; margin-left: auto; text-transform: uppercase; }
 
 @media (max-width: 900px) {
   .container { grid-template-columns: 144px minmax(0, 1fr); }
   .grid { grid-template-columns: repeat(2, 1fr); }
   .overview-feature-row { grid-template-columns: 1fr; }
   .overview-feature-image { height: 260px; }
+  .workflow-tabs { overflow-x: auto; }
+  .workflow-tabs .step-card { flex: 0 0 108px; }
+  .workflow-tabs #btn-customer { flex-basis: 88px; }
 }
 @media (max-width: 620px) {
-  body { padding: 10px; }
-  .container { border-radius: 14px; display: block; min-height: calc(100vh - 20px); }
+  body { padding: 5px; }
+  .container { border-radius: 14px; display: block; min-height: calc(100vh - 10px); }
   .header { border-bottom: 1px solid var(--line); border-right: 0; min-height: auto; padding: 16px; }
   .shop-logo-control { margin: 0 0 14px; text-align: left; }
   .brand { margin: 0 0 16px; }
@@ -172,5 +204,9 @@ label { color: #5c6370; display: block; font-size: .72rem; font-weight: 700; mar
   .stat-box { border-bottom: 1px solid var(--line); border-right: 0; }
   .stat-box:last-child { border-bottom: 0; }
   .overview-features { height: auto; min-height: 420px; }
+  .vehicle-vin-tools { grid-template-columns: 1fr; }
+  .vehicle-vin-tools button { width: 100%; }
+  .advisor-cards { grid-template-columns: 1fr; }
+  .worker-cards { grid-template-columns: 1fr; }
   .contact-page { padding: 28px 16px 16px; }
 }
