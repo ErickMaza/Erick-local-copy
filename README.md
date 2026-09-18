@@ -3,3 +3,4 @@ example login
 apex percision mechanics
 client@example.com
 pass123
+manger page access pin: 111111
