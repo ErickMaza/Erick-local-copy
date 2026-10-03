@@ -562,9 +562,14 @@ body.dark-mode .feature-card,
 body.dark-mode .marketing-stat-grid,
 body.dark-mode .stat-box,
 body.dark-mode .contact-form,
-body.dark-mode .overview-features {
+body.dark-mode .overview-features,
+body.dark-mode .contact-detail {
   background: var(--surface);
   border-color: var(--line);
+}
+
+body.dark-mode .contact-detail strong {
+  color: var(--ink);
 }
 
 body.dark-mode input,
@@ -1020,7 +1025,7 @@ body.dark-mode .btn-secondary:hover {
 }
 
 .customer-portal-header .shop-title-text {
-  color: #ffb57c;
+  color: #73be38;
 }
 
 .customer-portal-header #clientWelcomeName {
@@ -1484,7 +1489,7 @@ body::before {
 }
 
 .stat-number {
-  color: #475569;
+  color: #73be38;
 }
 
 /* Buttons: neutral steel, with the same responsive motion feel. */
@@ -2078,6 +2083,13 @@ body.dark-mode > .header + .container {
 
 /* Sidebar active state for customer portal. */
 .customer-nav-link.active {
+  color: #ffffff;
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.10);
+  transform: translateX(4px);
+}
+
+.staff-nav-link.active {
   color: #ffffff;
   background: rgba(255,255,255,.09);
   border-color: rgba(255,255,255,.10);
@@ -3705,6 +3717,12 @@ body:not(.dark-mode) .header-action-link:hover {
   color: var(--ink);
 }
 
+body:not(.dark-mode) .staff-nav-link.active {
+  background: #e7eaee;
+  border-color: #d0d5dd;
+  color: #1f2933;
+}
+
 body:not(.dark-mode) .header-actions {
   border-top-color: var(--line);
 }
@@ -3735,7 +3753,7 @@ body:not(.dark-mode) .auth-subtitle,
 body:not(.dark-mode) .auth-label-note,
 body:not(.dark-mode) .auth-check-row,
 body:not(.dark-mode) .auth-switch-copy {
-  color: #73be38;
+  color: #667085;
 }
 
 body:not(.dark-mode) .auth-form-wrap h1 {
@@ -3759,7 +3777,7 @@ body:not(.dark-mode) .auth-field input::placeholder {
 
 body:not(.dark-mode) .auth-check-row a,
 body:not(.dark-mode) .auth-text-link {
-  color: #334155;
+  color: #73be38;
 }
 
 body:not(.dark-mode) .auth-login-note {

@@ -22,7 +22,7 @@
   <div class="header-nav">
     <div class="header-links">
 
-      <!-- PUBLIC / STAFF NAVIGATION -->
+      <!-- PUBLIC NAVIGATION -->
       <button
         class="header-link public-nav-link"
         type="button"
@@ -31,19 +31,41 @@
         Home
       </button>
 
-      <a
-        class="header-link public-nav-link"
-        href="/overview.html"
-      >
+      <a class="header-link public-nav-link" href="/overview.html">
         Platform Overview
       </a>
 
-      <a
-        class="header-link public-nav-link"
-        href="/contact.html"
-      >
+      <a class="header-link public-nav-link" href="/contact.html">
         Contact
       </a>
+
+      <!-- STAFF NAVIGATION -->
+      <button
+        class="header-link staff-nav-link hidden"
+        type="button"
+        data-staff-page="team"
+        onclick="openStaffPage('team')"
+      >
+        Team Management
+      </button>
+
+      <button
+        class="header-link staff-nav-link hidden"
+        type="button"
+        data-staff-page="workflow"
+        onclick="openStaffPage('workflow')"
+      >
+        Active Repair Workflow
+      </button>
+
+      <button
+        class="header-link staff-nav-link hidden"
+        type="button"
+        data-staff-page="jobs"
+        onclick="openStaffPage('jobs')"
+      >
+        My Jobs
+      </button>
 
       <!-- CUSTOMER PORTAL NAVIGATION -->
       <button
@@ -690,7 +712,7 @@
         </div>
       </section>
 
-      <div id="managerControlPanel" class="hidden staff-manager-panel">
+      <div id="managerControlPanel" class="hidden staff-manager-panel staff-page-panel">
 
         <div class="staff-section-heading">
           <div>
@@ -801,7 +823,34 @@
         </div>
       </div>
 
-      <section class="staff-workflow-section">
+      <section id="myJobsPage" class="staff-workflow-section staff-page-panel hidden">
+        <div class="staff-section-heading">
+          <div>
+            <span class="staff-section-kicker">MY JOBS</span>
+            <h3>Repair Jobs</h3>
+            <p>Review repair jobs currently recorded for this shop.</p>
+          </div>
+        </div>
+
+        <div class="staff-table-shell">
+          <table class="staff-table">
+            <thead>
+              <tr>
+                <th>Job</th>
+                <th>Customer</th>
+                <th>Vehicle</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="myJobsTableBody">
+              <tr><td colspan="5">Loading shop jobs...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="activeWorkflowPage" class="staff-workflow-section staff-page-panel hidden">
         <div class="staff-section-heading">
           <div>
             <span class="staff-section-kicker">ACTIVE REPAIR WORKFLOW</span>

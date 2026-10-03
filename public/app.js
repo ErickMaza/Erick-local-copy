@@ -466,6 +466,60 @@ function showScreen(screenId) {
     .classList.remove('hidden');
 }
 
+function openStaffPage(pageName, repairJobId = null) {
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+  const pageIds = {
+    team: 'managerControlPanel',
+    workflow: 'activeWorkflowPage',
+    jobs: 'myJobsPage'
+  };
+
+  if (!token || role === 'customer') {
+    showToast('Please sign in with a staff account to access this page.', 'error');
+    showScreen(role === 'customer' ? 'customerDashboard' : 'loginSection');
+    return;
+  }
+
+  if (!pageIds[pageName]) {
+    return;
+  }
+
+  if (pageName === 'team' && role !== 'manager') {
+    showToast('Team management is available to managers only.', 'error');
+    pageName = 'workflow';
+  }
+
+  showScreen('employeeDashboard');
+
+  document.querySelectorAll('.staff-page-panel').forEach((panel) => {
+    panel.classList.add('hidden');
+  });
+
+  document
+    .getElementById(pageIds[pageName])
+    ?.classList.remove('hidden');
+
+  document.querySelectorAll('.staff-nav-link').forEach((link) => {
+    link.classList.toggle(
+      'active',
+      link.dataset.staffPage === pageName
+    );
+  });
+
+  if (pageName === 'jobs') {
+    renderMyJobs();
+  }
+
+  if (pageName === 'workflow' && repairJobId !== null) {
+    const customerSelector =
+      document.getElementById('customerSelector');
+
+    customerSelector.value = String(repairJobId);
+    autoFillCustomerData();
+  }
+}
+
 function switchCustomerTab(tabName) {
   const panels = [
     'home',
@@ -1412,6 +1466,54 @@ async function fetchCustomerList() {
         }
       )
       .join('');
+
+  renderMyJobs();
+}
+
+function renderMyJobs() {
+  const tbody = document.getElementById('myJobsTableBody');
+
+  if (!tbody) {
+    return;
+  }
+
+  if (loadedCustomerList.length === 0) {
+    tbody.innerHTML =
+      '<tr><td colspan="5">No repair jobs are recorded for this shop.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = loadedCustomerList
+    .map((job) => {
+      const jobId = Number(job.repair_job_id);
+      const jobNumber = escapeHtml(job.job_number || job.repair_job_id);
+      const customerName = escapeHtml(
+        `${job.first_name || ''} ${job.last_name || ''}`.trim() || 'Customer not listed'
+      );
+      const vehicle = escapeHtml(
+        [job.year, job.make, job.model].filter(Boolean).join(' ') || 'Vehicle not listed'
+      );
+      const status = escapeHtml(job.status || 'Open');
+
+      return `
+        <tr>
+          <td>${jobNumber}</td>
+          <td>${customerName}</td>
+          <td>${vehicle}</td>
+          <td>${status}</td>
+          <td>
+            <button
+              type="button"
+              class="staff-job-open-btn"
+              onclick="openStaffPage('workflow', ${jobId})"
+            >
+              Open Job
+            </button>
+          </td>
+        </tr>
+      `;
+    })
+    .join('');
 }
 
 function autoFillCustomerData() {
@@ -1539,7 +1641,18 @@ function updateHeaderAuthButtons() {
   document
     .querySelectorAll('.public-nav-link')
     .forEach((el) => {
-      el.classList.toggle('hidden', isCustomer);
+      el.classList.toggle('hidden', isLoggedIn);
+    });
+
+  document
+    .querySelectorAll('.staff-nav-link')
+    .forEach((el) => {
+      const managerOnly = el.dataset.staffPage === 'team';
+
+      el.classList.toggle(
+        'hidden',
+        !isLoggedIn || isCustomer || (managerOnly && role !== 'manager')
+      );
     });
 
   document
@@ -1603,6 +1716,7 @@ function renderDashboard() {
 
     fetchCustomerList();
     applyRolePermissions(role);
+    openStaffPage('workflow');
   }
 }
 

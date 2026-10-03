@@ -219,11 +219,16 @@ router.get('/list', authenticateToken, async (req, res) => {
         c.last_name,
         c.phone,
         c.email,
+        r.job_number,
+        r.status,
         v.make,
         v.model,
         v.year,
         v.vin
       FROM customers c
+      LEFT JOIN repair_jobs r
+        ON r.id = c.repair_job_id
+        AND r.company_id = c.company_id
       LEFT JOIN vehicles v
         ON v.repair_job_id = c.repair_job_id
         AND v.company_id = c.company_id
